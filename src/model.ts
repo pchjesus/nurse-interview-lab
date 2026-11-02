@@ -19,3 +19,12 @@ export function selectReports(data:Data, f:{search:string, person:string, type:s
 export function download(data:unknown, filename:string) { const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'})); const a=document.createElement('a'); a.href=url; a.download=filename.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_')+'.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000) }
 
 export function interviewType(r:Report):'직무'|'인성'|'혼합' {const types=new Set(r.questions.map(q=>q.type).filter(t=>t==='직무'||t==='인성'));return types.size===2?'혼합':r.session.type}
+
+/** Legacy files were permissive; preserve them while making broken links visible. */
+export function reportWarnings(r:Report):string[] {
+ const warnings:string[]=[], questions=new Set(r.questions.map(q=>q.questionId)), utterances=new Set(r.transcript.map(t=>t.utteranceId).filter((x):x is string=>typeof x==='string')), sources=new Set(r.sources.map(s=>s.sourceId).filter((x):x is string=>typeof x==='string'))
+ const walk=(v:unknown,path:string)=>{if(Array.isArray(v))v.forEach((x,i)=>walk(x,`${path}[${i}]`));else if(v&&typeof v==='object')for(const [key,x] of Object.entries(v)){if(key==='sourceId'&&typeof x==='string'&&!sources.has(x))warnings.push(`${path}.sourceId: 출처 ${x}를 찾을 수 없습니다.`);else if(key==='sourceIds'&&Array.isArray(x))x.forEach(id=>{if(typeof id==='string'&&!sources.has(id))warnings.push(`${path}.sourceIds: 출처 ${id}를 찾을 수 없습니다.`)});else if(key==='utteranceIds'&&Array.isArray(x))x.forEach(id=>{if(typeof id==='string'&&!utterances.has(id))warnings.push(`${path}.utteranceIds: 발화 ${id}를 찾을 수 없습니다.`)});else walk(x,`${path}.${key}`)}}
+ r.transcript.forEach((t,i)=>{if(typeof t.questionId==='string'&&t.questionId&&!questions.has(t.questionId))warnings.push(`transcript[${i}].questionId: 질문 ${t.questionId}를 찾을 수 없습니다.`)})
+ r.evaluations.forEach((e,i)=>{if(typeof e.questionId==='string'&&e.questionId&&!questions.has(e.questionId))warnings.push(`evaluations[${i}].questionId: 질문 ${e.questionId}를 찾을 수 없습니다.`);walk(e,`evaluations[${i}]`)})
+ return warnings
+}

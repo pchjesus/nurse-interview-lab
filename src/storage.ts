@@ -5,3 +5,9 @@ async function transaction(mode:IDBTransactionMode, action:(s:IDBObjectStore)=>I
 export async function load():Promise<Data|null> { const value=await transaction('readonly',s=>s.get('backup')); return value===undefined ? null : backupSchema.parse(value) }
 export async function save(data:Data) { await transaction('readwrite',s=>s.put(data,'backup')) }
 export async function clear() { await transaction('readwrite',s=>s.delete('backup')) }
+
+/** Save again if in-memory data changed while an IndexedDB transaction was pending. */
+export async function saveLatest(read:()=>Data, write:(data:Data)=>Promise<void> = save):Promise<void> {
+ let snapshot:Data
+ do { snapshot=read(); await write(snapshot) } while(snapshot!==read())
+}
