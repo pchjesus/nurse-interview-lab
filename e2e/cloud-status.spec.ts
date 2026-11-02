@@ -1,0 +1,2 @@
+import {test,expect} from '@playwright/test'
+test('설정은 기기 저장과 미연결 서버 상태를 구별한다',async({page})=>{const outbound:string[]=[];page.on('request',r=>{if(!r.url().startsWith('http://127.0.0.1:4173/'))outbound.push(r.url())});await page.goto('./');await page.getByRole('button',{name:'설정',exact:true}).click();await expect(page.getByText('저장 위치: 이 기기 (브라우저)')).toBeVisible();await expect(page.getByText('서버 저장: 연결되지 않음 · 마지막 서버 동기화: 없음')).toBeVisible();expect(outbound).toEqual([])})
