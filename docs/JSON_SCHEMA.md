@@ -28,3 +28,17 @@
 ```
 
 IndexedDB 사용 여부는 기기별 선택이므로 백업에 포함하지 않습니다. 원본 보고서 내보내기에는 로컬 제목과 사람 연결이 포함되지 않습니다. 이를 보존하려면 전체 백업을 사용하세요.
+
+## v0.2 선택 필드
+
+기존 1.0 파일을 그대로 읽습니다. 다음 필드는 없어도 되며, 빠진 시각이나 출처를 만들어내지 않습니다.
+
+- `participants[]`: `role`은 `면접관`, `응시자`, `미확인` 중 하나입니다. 로컬 personId는 보고서가 아닌 백업의 `links`에 저장합니다.
+- `questions[]`: `type` (`직무`, `인성`, `미분류`), 숫자 `order`, 문자열 `matchStatus`, 불리언 `uncertain`.
+- `transcript[]`: `utteranceId`, 숫자 `order`, 문자열 `startTime`, `endTime`, `questionId`, 불리언 `unclear`.
+- `evaluations[]`: `participantId`, `questionId`, `answer`, `strengths`, `evidence`, `weaknesses`, `improvements`, `improvedAnswer`, `overall`, `sourceIds`, `verificationStatus`. 인성 항목은 `intent`, `logic`, `specificity`, `sincerity`, `professionalism`, `communication`, `hospitalValues`를 사용합니다. 텍스트 또는 텍스트 배열로 입력합니다.
+- `sources[]`: `sourceId`, `author`, `year`, `title`, `edition`, `publisher`, `pages`, `apa`, `verified`. 확인되지 않은 출처는 `verified: false` 또는 생략합니다. 입력상 확인 표시는 앱이 출처를 독립 검증했다는 뜻이 아닙니다.
+
+백업의 각 보고서 항목에는 선택적 `transcriptEdits`가 추가됩니다. 원본 배열 인덱스를 키로 하고 수정된 `text`, `participantId`, `questionId`를 값으로 저장합니다. 보고서 원본은 바꾸지 않으며 전체 백업으로 수정본을 보존합니다. 원본 개별 JSON 내보내기에는 수정사항이 포함되지 않습니다.
+
+v0.1은 추가 필드를 자유 형식으로 허용했기 때문에 기존 데이터를 보존하려고 위 선택 필드의 형식이 다르더라도 가져오기를 거부하지 않습니다. 앱은 인식할 수 없는 선택 필드를 표시하거나 연결하지 못할 수 있습니다. 필수 ID·날짜·배열과 기본 연결 검증은 계속 적용됩니다. 신규 JSON은 위에 명시된 형식을 따라야 합니다.

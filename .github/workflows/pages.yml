@@ -1,7 +1,8 @@
 name: Build Pages
 on:
   push:
-    branches: [main]
+    branches: [main, "codex/**"]
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,6 +23,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
