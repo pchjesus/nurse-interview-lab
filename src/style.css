@@ -8,3 +8,56 @@ main { overflow-wrap: anywhere; }
 @media(max-width:650px){.utterance{grid-template-columns:1fr;gap:5px}}
 .transcript-controls button[aria-pressed="true"] {background:#eaf2fc;color:#1352a0;border-color:#7ca7d8}
 .guide-overlay{position:fixed;inset:0;z-index:1000}.guide-backdrop{position:absolute;inset:0;background:transparent}.guide-spotlight{position:fixed;pointer-events:none;border:3px solid #4da1ff;border-radius:8px;box-shadow:0 0 0 4px #fff,0 0 0 9999px rgba(0,0,0,.48);z-index:1}.guide-dialog{position:fixed;z-index:2;bottom:16px;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 24px));max-height:55vh;overflow:auto;background:white;border-radius:8px;padding:18px;box-shadow:0 8px 30px #0005}.guide-dialog h2{margin:4px 0}.guide-dialog p{margin:7px 0}.guide-hint{font-size:.85rem;color:#526476}.guide-actions{display:flex;flex-wrap:wrap;gap:8px}.practice-banner{background:#eaf2fc;border:1px solid #9bbce1;padding:12px;margin-bottom:16px}
+
+/* UI v1: restrained GitHub-inspired navigation and information hierarchy */
+:root{--ui-bg:#f6f8fa;--ui-border:#d0d7de;--ui-ink:#1f2328;--ui-muted:#59636e;--ui-blue:#0969da}
+body{background:var(--ui-bg);color:var(--ui-ink)}
+header{background:#fff;border-color:var(--ui-border);flex-wrap:wrap}
+header strong{color:var(--ui-ink)}
+.card,article,.transcript-group{background:#fff;border-color:var(--ui-border)}
+button{border-color:var(--ui-border);color:var(--ui-ink);border-radius:6px}
+button:hover,button.active{background:#ddf4ff;color:#0550ae;border-color:#80ccff}
+button.ui-primary{background:var(--ui-blue);border-color:var(--ui-blue);color:#fff;font-weight:600}
+button.ui-primary:hover{background:#0550ae;border-color:#0550ae;color:#fff}
+button.danger{color:#b42318;border-color:#e8b4b7}
+button.danger:hover{background:#ffebe9;border-color:#cf222e;color:#a40e26}
+h1{font-size:1.65rem;letter-spacing:-.025em}
+.ui-page-head h1{margin-bottom:6px}
+.ui-page-head p,.ui-page-desc,.ui-hint{color:var(--ui-muted)}
+.ui-page-head p{margin:0 0 20px}
+.ui-page-desc{margin:0 0 20px}
+.ui-header-status{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ui-chip{border:1px solid #b6d5bd;background:#dafbe1;color:#1a7f37;border-radius:999px;padding:5px 9px;font-size:.75rem;font-weight:600;white-space:nowrap}
+.ui-chip-muted{border-color:#d0d7de;background:#f6f8fa;color:#57606a}
+.stats{margin-bottom:18px}
+.stats article{margin:0;min-width:0}
+.stats span{font-size:.85rem;color:var(--ui-muted)}
+.stats strong{font-size:1.5rem;color:var(--ui-ink);margin-top:4px}
+.ui-start{margin-top:18px}
+.ui-start h2{margin:0}
+.ui-start>p{color:var(--ui-muted);font-size:.92rem}
+.ui-workflow{display:flex;flex-wrap:wrap;gap:10px 26px;padding-left:22px;color:var(--ui-muted);font-size:.9rem;margin:16px 0 20px}
+.ui-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.ui-hint{font-size:.82rem;margin:12px 0 0}
+.ui-feature-section{margin-top:28px}
+.ui-feature-section>h2{margin:0 0 14px}
+.ui-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ui-feature-grid .ui-feature{margin:0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.ui-feature h3{margin:0;font-size:1rem}
+.ui-feature p{flex:1;margin:0;color:var(--ui-muted);font-size:.87rem}
+.ui-feature button{align-self:flex-start}
+.ui-recent{margin-top:30px}
+.ui-section-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+.ui-section-header h2{margin:0}
+.ui-section-header button,.ui-row-open{font-size:.84rem;padding:7px 10px}
+.ui-empty{background:#fff;border:1px dashed var(--ui-border);border-radius:8px;color:var(--ui-muted);padding:20px;font-size:.9rem}
+.row{align-items:center}
+.row .link{min-width:0;flex:1}
+.row .ui-row-open{flex-shrink:0}
+.row span{font-size:.85rem}
+.ui-danger-zone{border-color:#e8b4b7}
+.ui-danger-zone h2{color:#a40e26}
+.ui-danger-zone p{color:var(--ui-muted);font-size:.9rem}
+.status{border:1px solid #b6d5ed}
+@media(max-width:800px){.ui-header-status{width:100%}}
+@media(max-width:650px){.ui-feature-grid{grid-template-columns:1fr}.ui-workflow{display:block}.ui-workflow li{margin:5px 0}.stats article{padding:12px}.row{align-items:stretch}.row .ui-row-open{align-self:flex-start}.ui-section-header{align-items:center}}
