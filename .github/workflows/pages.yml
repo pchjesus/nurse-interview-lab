@@ -6,8 +6,6 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  pages: write
-  id-token: write
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -27,9 +25,14 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test
       - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main'
         with:
           path: dist
   deploy:
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
     if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages

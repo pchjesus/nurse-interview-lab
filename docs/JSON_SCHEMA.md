@@ -42,3 +42,17 @@ IndexedDB 사용 여부는 기기별 선택이므로 백업에 포함하지 않�
 백업의 각 보고서 항목에는 선택적 `transcriptEdits`가 추가됩니다. 원본 배열 인덱스를 키로 하고 수정된 `text`, `participantId`, `questionId`를 값으로 저장합니다. 보고서 원본은 바꾸지 않으며 전체 백업으로 수정본을 보존합니다. 원본 개별 JSON 내보내기에는 수정사항이 포함되지 않습니다.
 
 v0.1은 추가 필드를 자유 형식으로 허용했기 때문에 기존 데이터를 보존하려고 위 선택 필드의 형식이 다르더라도 가져오기를 거부하지 않습니다. 앱은 인식할 수 없는 선택 필드를 표시하거나 연결하지 못할 수 있습니다. 필수 ID·날짜·배열과 기본 연결 검증은 계속 적용됩니다. 신규 JSON은 위에 명시된 형식을 따라야 합니다.
+
+## 권장 보고서 1.1
+
+1.0 보고서와 앱 백업은 계속 읽습니다. 신규 보고서는 `schemaVersion: "1.1"`을 사용합니다. reportId는 면접, participantId는 녹음 속 화자, personId는 로컬 프로필, questionId는 질문, utteranceId는 발화, sourceId는 참고문헌을 식별합니다. personId는 로컬 백업의 links에만 저장합니다.
+
+1.1은 모든 participant의 `role`, question의 `type`과 `order`, transcript의 고유 `utteranceId`와 `order`, 평가의 participantId·questionId, 출처의 sourceId를 요구합니다. ID 중복과 존재하지 않는 참조, 다른 참가자·질문에 속한 발화 참조는 가져오기 오류입니다. session.type은 `직무`, `인성`, `혼합`입니다. 각 질문은 독립적인 `직무`, `인성`, `미분류`를 갖습니다. 지원하지 않는 필드와 잘못된 형식도 1.1에서 오류로 처리합니다.
+
+`strengths`, `weaknesses`는 문자열, 문자열 배열 또는 구조화된 객체(배열)를 받습니다. 객체는 `content`를 필수로 하고 `quote`, `utteranceIds`, `reason`, `nursingEvidence`, `importance`, `improvement`, `references`를 선택적으로 받습니다. 각 reference는 `sourceId`, 선택적 `pages`, 선택적 `verified`입니다. `verified`는 분석자의 입력이며 앱의 독립 검증이 아닙니다. 확인되지 않은 페이지는 생략하거나 `verified: false`로 표시하세요.
+
+```json
+{"schemaVersion":"1.1","reportId":"example","session":{"date":"2026-11-02","type":"혼합","hospital":"가상병원"},"participants":[{"participantId":"a","name":"가상 응시자","role":"응시자"}],"questions":[{"questionId":"q1","text":"가상 질문","type":"직무","order":1},{"questionId":"q2","text":"가상 인성 질문","type":"인성","order":2}],"transcript":[{"utteranceId":"u1","participantId":"a","questionId":"q1","text":"가상 발언","order":1}],"evaluations":[{"participantId":"a","questionId":"q1","strengths":[{"content":"가상 장점","utteranceIds":["u1"],"reason":"판단 이유","nursingEvidence":"가상 근거","references":[{"sourceId":"s1","pages":"12","verified":false}]}],"weaknesses":[{"content":"부족한 점","importance":"중요성","improvement":"개선 방법"}],"improvedAnswer":"가상 개선 제안"}],"sources":[{"sourceId":"s1","apa":"가상 출처","verified":false}]}
+```
+
+백업은 1.0 형식을 유지하며 선택적 `transcriptEditsById`에 발화 ID별 수정값을 저장합니다. 이전 인덱스 수정은 유일한 발화 ID가 있을 때 자동 이전합니다. ID가 없거나 중복·충돌하면 기존 수정과 순서를 보존하고 경고합니다. 원본 보고서는 수정하지 않습니다.
