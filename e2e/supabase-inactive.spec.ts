@@ -1,0 +1,4 @@
+import {test,expect} from '@playwright/test'
+for(const viewport of [{width:1280,height:800},{width:390,height:844}])test(`서버 비활성 상태에서는 외부 요청이나 자동 인증이 없다 ${viewport.width}px`,async({page})=>{
+ const external:string[]=[];page.on('request',r=>{if(!r.url().startsWith('http://127.0.0.1:4173/'))external.push(r.url())});await page.setViewportSize(viewport);await page.goto('./');await page.getByRole('button',{name:'설정',exact:true}).click();await expect(page.getByText('저장 위치: 이 기기 (브라우저)')).toBeVisible();await expect(page.getByText('서버 저장: 연결되지 않음 · 마지막 서버 동기화: 없음')).toBeVisible();await expect(page.getByRole('button',{name:'기기 저장 켜기'})).toBeVisible();expect(external).toEqual([]);expect(await page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('sb-')))).toEqual([]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+})
