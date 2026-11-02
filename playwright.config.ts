@@ -1,0 +1,2 @@
+import { defineConfig } from '@playwright/test'
+export default defineConfig({testDir:'./e2e', workers:1,timeout:30000,use:{baseURL:'http://127.0.0.1:4173/nurse-interview-lab/',browserName:'chromium',launchOptions:{executablePath:process.env.CHROMIUM_PATH || undefined,args:['--no-sandbox']}},webServer:{command:'npm run preview -- --host 127.0.0.1',port:4173,reuseExistingServer:false,timeout:30000}})
