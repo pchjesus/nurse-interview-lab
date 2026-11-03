@@ -17,7 +17,7 @@ create table public.nurse_backups (
   , false))
 );
 alter table public.nurse_backups enable row level security;
-revoke all on table public.nurse_backups from public, anon, authenticated;
+revoke all on table public.nurse_backups from public, anon, authenticated, service_role;
 grant select on table public.nurse_backups to authenticated;
 create policy nurse_backups_read_own on public.nurse_backups
   for select to authenticated using ((select auth.uid()) = owner_id and (select auth.jwt())->'is_anonymous' = 'false'::jsonb);
@@ -68,6 +68,6 @@ begin
   return v_saved;
 end;
 $$;
-revoke all on function public.save_nurse_backup(uuid, bigint, text, jsonb) from public, anon, authenticated;
+revoke all on function public.save_nurse_backup(uuid, bigint, text, jsonb) from public, anon, authenticated, service_role;
 grant execute on function public.save_nurse_backup(uuid, bigint, text, jsonb) to authenticated;
 commit;

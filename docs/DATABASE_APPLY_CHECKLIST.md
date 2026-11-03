@@ -43,3 +43,15 @@ PGlite 보안 SQL 및 일회성 로컬 PostgreSQL 18.6 두 연결 시험은 통�
 - [Supabase 함수 권한·SECURITY DEFINER](https://github.com/supabase/supabase/blob/master/apps/docs/content/guides/database/functions.mdx)
 - [Supabase RLS·JWT](https://github.com/supabase/supabase/blob/master/apps/docs/content/guides/database/postgres/row-level-security.mdx)
 - [auth.role 역사적 함수 정의](https://github.com/supabase/auth/blob/master/migrations/20211124214934_update_auth_functions.up.sql)
+
+## B3.1 실제 사전점검 결과 반영 (2026-11-03)
+
+사용자가 제공한 실제 읽기 전용 점검 결과에 따르면 새 테이블 기본 ACL에 anon/authenticated/service_role의 TRUNCATE·REFERENCES·TRIGGER·MAINTAIN이 포함돼 있다. 이번 작업에서 실제 프로젝트를 다시 조회하거나 SQL을 실행하지는 않았다. 이 사실만으로 나머지 확인표를 완료로 바꾸지 않는다.
+
+적용 후보는 세 역할과 PUBLIC의 테이블 권한을 모두 회수한 뒤 authenticated SELECT만 부여한다. service_role의 함수 EXECUTE도 명시적으로 회수한다. service_role은 BYPASSRLS일 수 있으므로 RLS만으로 차단할 수 없으며, 신뢰된 관리자·소유자의 권한까지 차단한다고 표현하지 않는다. 실제 역할 상속이나 향후 GRANT로 권한이 다시 생길 수 있어 적용 후 유효 권한 재확인이 필요하다.
+
+사전점검 SQL에 스키마 CREATE/USAGE의 유효 권한, SET ROLE·상속·admin 경로, 기본 ACL의 개별 권한, auth.users.id의 UUID 및 PK/UNIQUE 메타데이터 확인을 추가했다. PG 16+ 카탈로그와 SET 권한 조회를 사용한다.
+
+격리 테스트는 넓은 기본 ACL과 BYPASSRLS service_role을 재현한다. 기존 보안 시나리오는 유지하고 `request.jwt.claims` 통합 JSON에서 role/sub/is_anonymous를 읽도록 모의를 변경했다. 실제 auth.jwt()의 claims 입력 구조를 반영하지만 서버의 서명·만료 검증을 모의 SQL이 대신하지는 않는다. PGlite와 PostgreSQL 18.6에서 보안 assertion 38개(그중 MAINTAIN 1개는 PG 17+ 조건부), 병렬 생성·수정 2개 및 사전점검 SQL 로컬 실행이 통과했다. 실계정 JWT·Data API 설정·복구 및 보존 정책은 계속 미검증이며 실제 DB 적용은 별도 승인과 확인이 필요하다.
+
+이번 작업의 앱 회귀 결과: Vitest 49 통과/0 실패/0 건너뜀, 기본 Playwright 36 통과/0 실패/4 설정별 건너뜀, 모의 인증 Playwright 4 통과/0 실패/1 기본설정 전용 건너뜀. TypeScript·Vite 기본 및 모의 설정 빌드 통과. 기존 PDF 번들 크기 경고는 유지된다. 앱 소스·CI 설정·기존 테스트 목록은 변경하지 않았다.

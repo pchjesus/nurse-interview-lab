@@ -13,7 +13,7 @@ psqlcmd=(env -i "PATH=$PATH" psql -X -h "$socket" -p "${4:-5432}" -U "$3" -d "$2
 "${psqlcmd[@]}" -c "insert into auth.users values ('cccccccc-cccc-cccc-cccc-cccccccccccc')" >/dev/null
 run_pair() {
  local owner=$1 rev=$2
- local stmt="set role authenticated; select set_config('request.jwt.claim.role','authenticated',false); select set_config('request.jwt.claim.is_anonymous','false',false); select set_config('request.jwt.claim.sub','$owner',false); select public.save_nurse_backup('$owner',$rev,'1.0','{\"kind\":\"nurse-interview-lab-backup\",\"schemaVersion\":\"1.0\",\"people\":[],\"reports\":[]}'::jsonb);"
+ local stmt="set role authenticated; select set_config('request.jwt.claims','{\"sub\":\"$owner\",\"role\":\"authenticated\",\"is_anonymous\":false}',false); select public.save_nurse_backup('$owner',$rev,'1.0','{\"kind\":\"nurse-interview-lab-backup\",\"schemaVersion\":\"1.0\",\"people\":[],\"reports\":[]}'::jsonb);"
  local a b
  set +e
  "${psqlcmd[@]}" -c "$stmt" >"$out/a" 2>&1 & a=$!
