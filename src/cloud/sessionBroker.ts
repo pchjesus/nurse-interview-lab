@@ -1,5 +1,6 @@
 import {createClient} from '@supabase/supabase-js'
 import {z} from 'zod'
+import {backupSchema} from '../model'
 import {SupabaseCloudTransport, type MemorySessionBinding} from './supabaseTransport'
 import {validateSupabaseSettings} from './supabase'
 
@@ -11,7 +12,8 @@ export function isPermittedDataRequest(origin:string,rawUrl:string,method:string
   if(url.pathname==='/rest/v1/nurse_backups'&&method==='GET')return [...url.searchParams.keys()].length===2&&url.searchParams.getAll('owner_id').length===1&&url.searchParams.get('owner_id')===`eq.${owner}`&&url.searchParams.getAll('select').length===1&&url.searchParams.get('select')==='owner_id,format_version,revision,backup,updated_at'
   if(url.pathname!=='/rest/v1/rpc/save_nurse_backup'||method!=='POST'||url.search||typeof body!=='string')return false
   const parsed:unknown=JSON.parse(body)
-  return !!parsed&&typeof parsed==='object'&&(parsed as Record<string,unknown>).p_expected_owner_id===owner
+  const schema=z.object({p_expected_owner_id:z.literal(owner),p_expected_revision:z.number().int().positive().safe().lt(Number.MAX_SAFE_INTEGER).nullable(),p_format_version:z.literal('1.0'),p_backup:backupSchema}).strict()
+  return schema.safeParse(parsed).success
  }catch{return false}
 }
 type VerifiedSession={user:{id:string};access_token:string;expires_at:number}
