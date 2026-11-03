@@ -16,7 +16,7 @@
 
 ## 보안 및 적용 전 검토
 
-인증 주체는 검증된 JWT의 `auth.uid()`만 신뢰한다. 비로그인 요청을 거부하고 본인 행만 조회하도록 RLS를 적용하며, RLS와 별개로 테이블 및 함수에 대한 PUBLIC·anon·authenticated 권한을 점검한다. 사용자에게 직접 쓰기 권한을 주지 않거나 쓰기 경로가 원자적 비교를 강제해야 한다. 테이블 소유자와 BYPASSRLS 역할은 RLS를 우회할 수 있으므로 관리용 키는 클라이언트에 넣지 않는다. `SECURITY DEFINER`가 필요한 경우 고정된 안전한 `search_path`, 스키마 한정 이름, 소유자 권한, PUBLIC 실행 권한 철회, SQL injection 및 권한 상승 여부를 별도로 검토한다. 대안인 invoker 함수는 호출자의 테이블 권한과 RLS로 통제되지만 직접 UPDATE 권한이 있으면 비교를 우회할 수 있어 별도 방어가 필요하다.
+인증 주체는 검증된 JWT의 `auth.uid()`만 신뢰한다. 비로그인 요청을 거부하고 본인 행만 조회하도록 RLS를 적용하며, RLS와 별개로 테이블 및 함수에 대한 PUBLIC·anon·authenticated·service_role 권한을 점검한다. 사용자에게 직접 쓰기 권한을 주지 않거나 쓰기 경로가 원자적 비교를 강제해야 한다. 테이블 소유자와 BYPASSRLS 역할은 RLS를 우회할 수 있으므로 관리용 키는 클라이언트에 넣지 않는다. `SECURITY DEFINER`가 필요한 경우 고정된 안전한 `search_path`, 스키마 한정 이름, 소유자 권한, PUBLIC 실행 권한 철회, SQL injection 및 권한 상승 여부를 별도로 검토한다. 대안인 invoker 함수는 호출자의 테이블 권한과 RLS로 통제되지만 직접 UPDATE 권한이 있으면 비교를 우회할 수 있어 별도 방어가 필요하다.
 
 동일 GitHub Pages 출처의 다른 프로젝트는 동일한 스크립트·브라우저 저장소 신뢰 경계를 공유한다. 실제 개인정보를 활성화하기 전 별도 출처 또는 동등한 완화책, CSP·배포 권한·공급망과 로그 정책을 검토한다. 인증 상태 UI나 공개 키는 접근 제어가 아니다. 관리자·마이그레이션 역할, 소유권, 기본 권한과 향후 생성 객체의 권한도 대상 프로젝트에서 별도 검토한다.
 
@@ -43,3 +43,5 @@
 함수 소유자와 테이블 소유자의 일치, 고정 search_path, PUBLIC·anon EXECUTE 철회 및 authenticated EXECUTE를 모의 환경에서 검사한다. `auth.jwt()->>'role'`은 검증된 JWT의 role을 확인하는 추가 방어이며 실제 Supabase의 토큰과 함수 동작은 별도 검증해야 한다. 실제 적용 전 함수 소유자와 역할 상속·기본 권한을 확인한다.
 
 B3의 적용 후보 SQL, 미검증 조건과 승인 체크리스트는 [DATABASE_APPLY_CHECKLIST.md](DATABASE_APPLY_CHECKLIST.md)를 따른다. 실제 DB 적용은 별도 승인 전 금지한다.
+
+B3.1은 제공받은 실제 기본 ACL의 넓은 권한을 격리 환경에 재현하고 service_role 명시 회수 및 통합 JWT claims 테스트를 추가했다. 자세한 결과와 미검증 조건은 적용 체크리스트의 B3.1 항목을 참조한다.
