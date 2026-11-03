@@ -8,6 +8,7 @@ import './style.css'
 import ReportDetails, {replaceEntry} from './ReportDetails'
 import {effectiveTranscript} from './feedback'
 import Guide, {guideSteps} from './Guide'
+import AuthPanel from './AuthPanel'
 const key='nurse-interview-lab-persistent'
 const uid=()=>crypto.randomUUID()
 const fmt=(s:string)=>`${s.slice(0,4)}년 ${Number(s.slice(5,7))}월 ${Number(s.slice(8,10))}일`
@@ -39,7 +40,7 @@ function App(){
  function exitPractice(){setGuideStep(null);setPractice(false);setPracticeData(empty());setPersonId('');setReportId('');setTab('대시보드')}
  function showReport(id:string){setReportId(id);setTab('면접 기록')}
  if(!ready)return <main>저장 데이터를 확인하는 중입니다…</main>
- return <><header><div><strong>Nurse Interview Lab</strong><small>간호사 모의면접 기록</small></div><nav aria-label="주 메뉴">{['대시보드','사람','면접 기록','설정'].map(t=><button data-guide={t==='면접 기록'?'nav-records':undefined} className={tab===t?'active':''} key={t} onClick={()=>{setTab(t);setReportId('');setPersonId('')}}>{t}</button>)}<button data-guide="help" onClick={()=>startGuide(false)}>사용법</button></nav><div className="ui-header-status" aria-label="현재 상태"><span className="ui-chip">{practice?'연습 모드':blocked.current?'저장 확인 필요':paused?'자동 저장 일시 중지':persistent?'기기 자동 저장 중':'메모리 전용'}</span><span className="ui-chip ui-chip-muted">서버 미연결</span></div></header><main>{practice&&<div className="practice-banner" role="status">가상 연습 중 · 실제 기록과 기기 저장을 변경하지 않습니다. <button onClick={exitPractice}>연습 종료</button></div>}<div className="status" role="status">{practice?'가상 연습은 메모리에서만 진행됩니다':status}</div>{message&&<div className="notice" role="alert">{message} <button onClick={()=>setMessage('')}>닫기</button></div>}
+ return <><header><div><strong>Nurse Interview Lab</strong><small>간호사 모의면접 기록</small></div><nav aria-label="주 메뉴">{['대시보드','사람','면접 기록','설정'].map(t=><button data-guide={t==='면접 기록'?'nav-records':undefined} className={tab===t?'active':''} key={t} onClick={()=>{setTab(t);setReportId('');setPersonId('')}}>{t}</button>)}<button data-guide="help" onClick={()=>startGuide(false)}>사용법</button></nav><div className="ui-header-status" aria-label="현재 상태"><span className="ui-chip">{practice?'연습 모드':blocked.current?'저장 확인 필요':paused?'자동 저장 일시 중지':persistent?'기기 자동 저장 중':'메모리 전용'}</span><span className="ui-chip ui-chip-muted">서버 미연결</span><AuthPanel/></div></header><main>{practice&&<div className="practice-banner" role="status">가상 연습 중 · 실제 기록과 기기 저장을 변경하지 않습니다. <button onClick={exitPractice}>연습 종료</button></div>}<div className="status" role="status">{practice?'가상 연습은 메모리에서만 진행됩니다':status}</div>{message&&<div className="notice" role="alert">{message} <button onClick={()=>setMessage('')}>닫기</button></div>}
  {tab==='대시보드'&&<>
   <div className="ui-page-head"><h1>대시보드</h1><p>모의면접 기록과 피드백을 한곳에서 관리합니다.</p></div>
   <div className="stats" aria-label="기록 요약"><article><span>등록된 사람</span><strong>{data.people.length}명</strong></article><article><span>면접 기록</span><strong>{data.reports.length}건</strong></article></div>
