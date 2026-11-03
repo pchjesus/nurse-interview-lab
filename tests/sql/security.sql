@@ -5,7 +5,7 @@ create role authenticated nologin;
 create schema auth;
 create table auth.users (id uuid primary key);
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-create function auth.jwt() returns jsonb language sql stable as $$ select jsonb_build_object('is_anonymous', case current_setting('request.jwt.claim.is_anonymous', true) when 'false' then 'false'::jsonb when 'true' then 'true'::jsonb when '' then 'null'::jsonb else to_jsonb(current_setting('request.jwt.claim.is_anonymous', true)) end) $$;
+create function auth.jwt() returns jsonb language sql stable as $$ select jsonb_build_object('role', nullif(current_setting('request.jwt.claim.role', true), ''), 'is_anonymous', case current_setting('request.jwt.claim.is_anonymous', true) when 'false' then 'false'::jsonb when 'true' then 'true'::jsonb when '' then 'null'::jsonb else to_jsonb(current_setting('request.jwt.claim.is_anonymous', true)) end) $$;
 create function auth.role() returns text language sql stable as $$ select nullif(current_setting('request.jwt.claim.role', true), '') $$;
 grant usage on schema auth to anon, authenticated;
 grant execute on function auth.uid(), auth.role(), auth.jwt() to anon, authenticated;

@@ -1,5 +1,5 @@
 -- REVIEW DRAFT ONLY. Do not run against any Supabase project without separate approval.
--- Expected platform prerequisites: auth.users, auth.uid(), auth.role(), anon and authenticated roles.
+-- Expected platform prerequisites: auth.users, auth.uid(), auth.jwt(), anon and authenticated roles.
 begin;
 
 create table public.nurse_backups (
@@ -34,7 +34,7 @@ declare
   v_owner uuid := auth.uid();
   v_saved public.nurse_backups;
 begin
-  if v_owner is null or auth.role() is distinct from 'authenticated'
+  if v_owner is null or auth.jwt()->>'role' is distinct from 'authenticated'
     or auth.jwt()->'is_anonymous' is distinct from 'false'::jsonb then
     raise exception using errcode = '42501', message = 'authentication_required';
   end if;
