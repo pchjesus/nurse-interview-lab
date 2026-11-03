@@ -45,6 +45,31 @@ jobs:
       - run: npx playwright test e2e/auth.spec.ts
         env:
           AUTH_E2E_CONFIGURED: '1'
+  sql-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run in-memory security tests
+        run: |
+          npm install --prefix /tmp/nurse-b2-pg --no-save @electric-sql/pglite@0.5.14
+          node tests/sql/run-pglite.mjs /tmp/nurse-b2-pg
+      - name: Install PostgreSQL
+        run: sudo apt-get update && sudo apt-get install -y postgresql postgresql-client
+      - name: Run isolated PostgreSQL concurrency tests
+        run: |
+          set -euo pipefail
+          pg_bin=$(find /usr/lib/postgresql -path '*/bin/initdb' -printf '%h\n' | sort -V | tail -1)
+          test -n "$pg_bin"
+          temp_dir=$(mktemp -d /tmp/nurse-b2-ci.XXXXXX)
+          trap '"$pg_bin/pg_ctl" -D "$temp_dir/data" -m immediate stop || true; rm -rf "$temp_dir"' EXIT
+          mkdir "$temp_dir/socket"
+          "$pg_bin/initdb" -D "$temp_dir/data" --auth=trust --no-locale
+          "$pg_bin/pg_ctl" -D "$temp_dir/data" -o "-k $temp_dir/socket -c listen_addresses=''" -w start
+          "$pg_bin/createdb" -h "$temp_dir/socket" nurse_b2_test_ci
+          PATH="$pg_bin:$PATH" tests/sql/run-concurrency.sh "$temp_dir/socket" nurse_b2_test_ci "$(id -un)"
   deploy:
     permissions:
       pages: write
@@ -55,7 +80,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: [build, auth-mock]
+    needs: [build, auth-mock, sql-review]
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4

@@ -48,6 +48,14 @@ select set_config('request.jwt.claim.is_anonymous','invalid',false);
 select public.test_assert((select count(*) from public.nurse_backups) = 0, 'invalid anonymous claim cannot read');
 select public.test_denied($q$select public.save_nurse_backup('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',null,'1.0','{}'::jsonb)$q$);
 select set_config('request.jwt.claim.is_anonymous','false',false);
+select set_config('request.jwt.claim.role','anon',false);
+select public.test_denied($q$select public.save_nurse_backup('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',1,'1.0','{}'::jsonb)$q$);
+select set_config('request.jwt.claim.role','authenticated',false);
 select set_config('request.jwt.claim.sub','',false);
 select public.test_denied($q$select public.save_nurse_backup('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',null,'1.0','{"kind":"nurse-interview-lab-backup","schemaVersion":"1.0","people":[],"reports":[]}'::jsonb)$q$);
 reset role;
+-- SECURITY DEFINER metadata and independent EXECUTE privilege checks.
+select public.test_assert((select prosecdef and proowner = (select relowner from pg_class where oid = 'public.nurse_backups'::regclass) and proconfig @> array['search_path=""'] from pg_proc where oid = 'public.save_nurse_backup(uuid,bigint,text,jsonb)'::regprocedure), 'trusted shared owner and fixed search_path');
+select public.test_assert(not has_function_privilege('anon', 'public.save_nurse_backup(uuid,bigint,text,jsonb)', 'EXECUTE'), 'anon cannot execute RPC');
+select public.test_assert(has_function_privilege('authenticated', 'public.save_nurse_backup(uuid,bigint,text,jsonb)', 'EXECUTE'), 'authenticated can execute RPC');
+select public.test_assert(not exists (select 1 from pg_proc p, lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a where p.oid='public.save_nurse_backup(uuid,bigint,text,jsonb)'::regprocedure and a.grantee=0 and a.privilege_type='EXECUTE'), 'PUBLIC cannot execute RPC');

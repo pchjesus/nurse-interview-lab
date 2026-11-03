@@ -38,4 +38,6 @@
 
 `tests/sql/run-pglite.mjs`는 외부 DB URL을 받지 않는 메모리 전용 테스트다. 예를 들어 저장소 밖 임시 디렉터리에 `npm install --prefix /tmp/nurse-b2-pg --no-save @electric-sql/pglite@0.5.14`로 설치하고 `node tests/sql/run-pglite.mjs /tmp/nurse-b2-pg`를 실행한다. SQL의 인증 함수는 모의 구현이다.
 
-`tests/sql/run-concurrency.sh`는 별도로 준비한 빈 일회성 PostgreSQL의 `/tmp` 유닉스 소켓과 `nurse_b2_test_`로 시작하는 전용 DB 이름만 허용하며, 실제 동시 생성·수정 두 세션을 검증한다. `psql`과 로컬 서버가 필요하다. 이 환경에서는 해당 병렬 테스트를 실행하지 못했다. 실행 전 전용 DB가 비어 있고 폐기 가능한지 확인한다.
+`tests/sql/run-concurrency.sh`는 별도로 준비한 빈 일회성 PostgreSQL의 `/tmp` 유닉스 소켓과 `nurse_b2_test_`로 시작하는 전용 DB 이름만 허용하며, 실제 동시 생성·수정 두 세션을 검증한다. `psql`과 로컬 서버가 필요하다. PostgreSQL 18.6의 일회성 로컬 서버에서 최초 생성 및 같은 revision 수정의 두 연결 경합을 각각 실행해 성공 1건과 revision 충돌 1건을 확인했다. CI에서도 독립 서버로 두 시험을 실행한다. 실행 전 전용 DB가 비어 있고 폐기 가능한지 확인한다.
+
+함수 소유자와 테이블 소유자의 일치, 고정 search_path, PUBLIC·anon EXECUTE 철회 및 authenticated EXECUTE를 모의 환경에서 검사한다. `auth.role()`은 검증된 JWT의 role을 확인하는 추가 방어이며 실제 Supabase의 토큰과 함수 동작은 별도 검증해야 한다. 실제 적용 전 함수 소유자와 역할 상속·기본 권한을 확인한다.
