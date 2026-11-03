@@ -61,3 +61,5 @@ h1{font-size:1.65rem;letter-spacing:-.025em}
 .status{border:1px solid #b6d5ed}
 @media(max-width:800px){.ui-header-status{width:100%}}
 @media(max-width:650px){.ui-feature-grid{grid-template-columns:1fr}.ui-workflow{display:block}.ui-workflow li{margin:5px 0}.stats article{padding:12px}.row{align-items:stretch}.row .ui-row-open{align-self:flex-start}.ui-section-header{align-items:center}}
+.auth-area{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.auth-area .ui-chip{overflow-wrap:anywhere}.auth-overlay{position:fixed;inset:0;z-index:1100;background:#0008;display:flex;align-items:center;justify-content:center;padding:12px}.auth-dialog{background:#fff;color:#17212e;width:min(460px,100%);max-height:calc(100vh - 24px);overflow:auto;padding:20px;border:1px solid #dce3eb;border-radius:8px;box-shadow:0 8px 30px #0005}.auth-dialog h2{margin-top:0}.auth-dialog button{margin:6px 6px 0 0}.auth-dialog p{overflow-wrap:anywhere}
+.auth-area{min-width:0;max-width:100%}.auth-area .ui-chip{white-space:normal;min-width:0;overflow-wrap:anywhere}

@@ -31,3 +31,21 @@ export async function createInactiveSupabaseClient(env:Settings={VITE_SUPABASE_U
  })
  return {status:'initialized',client}
 }
+
+/** Created only after an explicit OTP request. All non-auth HTTP paths are denied. */
+export async function createEmailOtpClient(env:Settings={VITE_SUPABASE_URL:import.meta.env.VITE_SUPABASE_URL,VITE_SUPABASE_PUBLISHABLE_KEY:import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY},fetchImpl:typeof fetch=globalThis.fetch):Promise<{status:'initialized';client:SupabaseClient;abort:()=>void}|{status:'unconfigured'|'invalid';reason:string}>{
+ const config=validateSupabaseSettings(env)
+ if(config.status!=='ready')return config
+ const controller=new AbortController()
+ const authFetch:typeof fetch=async(input,init)=>{
+  const target=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url)
+  const method=(init?.method||(input instanceof Request?input.method:'GET')).toUpperCase()
+  const pathAllowed=target.pathname==='/auth/v1/otp'||target.pathname==='/auth/v1/verify'||target.pathname==='/auth/v1/logout'
+  const paramsAllowed=target.pathname==='/auth/v1/logout'?(target.search===''||target.search==='?scope=local'):target.search===''
+  if(target.origin!==config.url||!pathAllowed||!paramsAllowed||method!=='POST')throw new Error('허용되지 않은 서버 요청입니다.')
+  const requestController=new AbortController();const signals=[controller.signal,init?.signal,input instanceof Request?input.signal:undefined].filter((signal):signal is AbortSignal=>!!signal);const abort=()=>requestController.abort();for(const signal of signals){if(signal.aborted)abort();else signal.addEventListener('abort',abort,{once:true})}const timeout=setTimeout(abort,15000);try{return await fetchImpl(input,{...init,signal:requestController.signal,redirect:'error'})}finally{clearTimeout(timeout);for(const signal of signals)signal.removeEventListener('abort',abort)}
+ }
+ const {createClient}=await import('@supabase/supabase-js')
+ const client=createClient(config.url,config.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,skipAutoInitialize:true,storageKey:`nurse-interview-auth-${crypto.randomUUID()}`},global:{fetch:authFetch}})
+ return {status:'initialized',client,abort:()=>{controller.abort();void client.auth.dispose()}}
+}

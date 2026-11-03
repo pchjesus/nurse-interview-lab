@@ -28,6 +28,23 @@ jobs:
         if: github.ref == 'refs/heads/main'
         with:
           path: dist
+  auth-mock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://aevhsdqrirgslfetknip.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_012345678901234567890123456789
+      - run: npx playwright test e2e/auth.spec.ts
+        env:
+          AUTH_E2E_CONFIGURED: '1'
   deploy:
     permissions:
       pages: write
@@ -38,7 +55,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, auth-mock]
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
