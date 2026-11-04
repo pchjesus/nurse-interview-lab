@@ -1,6 +1,6 @@
 import React,{useEffect,useRef,useState} from 'react'
 export const guideSteps=[
- {title:'CLOVA Note에서 전사하기',text:'면접 참여자의 동의를 받고 CLOVA Note에서 녹음과 전사를 준비하세요. 화자와 불명확한 발언은 직접 확인합니다.',target:'start'},
+ {title:'CLOVA Note에서 전사하기',text:'면접 참여자의 동의를 받고 CLOVA Note에서 전사한 뒤 면접 기록에 붙여넣어 원문을 확인하세요. 전사 초안은 메모리에만 남습니다.',target:'start'},
  {title:'ChatGPT로 분석하기',text:'별도의 ChatGPT 대화에서 전사와 허용된 자료를 분석하고 JSON 1.1을 만듭니다. 확인하지 않은 교재·페이지는 미검증으로 둡니다.',target:'start'},
  {title:'JSON 가져오기',text:'면접 기록에서 JSON 파일을 선택하거나 붙여넣고 검증 및 미리보기를 선택합니다.',target:'import'},
  {title:'참여자 연결',text:'참여자마다 기존 사람을 선택하거나 새 사람으로 등록합니다. 동명이인은 자동으로 합쳐지지 않습니다.',target:'mapping'},
