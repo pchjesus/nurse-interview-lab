@@ -2,10 +2,10 @@ import {useRef, useState} from 'react'
 
 const MAX_BYTES=5*1024*1024
 
-type Props={value:string;onChange:(text:string)=>void}
+type Props={value:string;onChange:(text:string)=>boolean|void;onClear:()=>boolean}
 
 /** An in-memory draft only; it never touches report data or browser storage. */
-export default function ClovaTranscript({value,onChange}:Props){
+export default function ClovaTranscript({value,onChange,onClear}:Props){
  const [notice,setNotice]=useState('')
  const [error,setError]=useState('')
  const input=useRef<HTMLTextAreaElement>(null)
@@ -13,7 +13,8 @@ export default function ClovaTranscript({value,onChange}:Props){
  let characters=0;for(const _ of value)characters++
  function change(text:string){
   if(text.length>MAX_BYTES||new TextEncoder().encode(text).byteLength>MAX_BYTES){setError('전사본은 UTF-8 기준 5MiB 이하여야 합니다. 입력이 너무 커서 추가하지 않았습니다.');setNotice('');return}
-  onChange(text);setError('');setNotice('')
+  if(onChange(text)===false)return
+  setError('');setNotice('')
  }
  async function copy(){
   if(!hasText){setError('복사할 전사본을 입력해 주세요.');return}
@@ -26,7 +27,7 @@ export default function ClovaTranscript({value,onChange}:Props){
    input.current?.focus();input.current?.select()
   }
  }
- function clear(){if(value&&confirm('임시 전사본을 지울까요?')){onChange('');setNotice('전사본을 지웠습니다.');setError('')}}
+ function clear(){if(value&&onClear()){setNotice('전사본을 지웠습니다.');setError('')}}
  return <section className="card clova-transcript" aria-labelledby="clova-title">
   <h2 id="clova-title">CLOVA 전사본 입력</h2>
   <p>CLOVA Note에서 복사한 전사 텍스트를 붙여넣고 원문을 확인하세요. 질문이나 화자를 자동으로 분석하지 않습니다.</p>
